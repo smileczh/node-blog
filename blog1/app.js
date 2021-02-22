@@ -3,6 +3,7 @@
 const { request } = require('http')
 const querystring = require('querystring')
 const { get, set } = require('./src/db/redis')
+const { access } = require('./src/utils/log')
 const handleBlogRouter = require('./src/router/blog')
 const handleUserRouter = require('./src/router/user')
 
@@ -47,6 +48,8 @@ const getPostData = (req) => {
 }
   
 const serverHandle = (req, res) => {
+    // 记录 access log
+    access(`${req.method} -- ${req.url} -- ${req.headers['user-agent']} -- ${Date.now()}`)
     // 设置返回格式 JSON
     res.setHeader('Content-type', 'application/json')
     
@@ -114,14 +117,7 @@ const serverHandle = (req, res) => {
     })
     .then(postData => {
       req.body = postData
-      // 处理 blog 路由
-      // const blogData = handleBlogRouter(req, res)
-
-      // if (blogData) {
-      //   res.end(JSON.stringify(blogData))
-      //   return
-      // }
-      
+      // 处理 blog 路由   
       const blogresult = handleBlogRouter(req, res)
       if (blogresult) {
         blogresult.then(blogData => {
